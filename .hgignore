@@ -1,0 +1,9 @@
+syntax: glob
+
+packages
+vendor
+_vendor*
+.idea
+
+*.lock
+*.exe

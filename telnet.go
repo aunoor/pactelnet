@@ -61,30 +61,23 @@ func (tl *telnet) TelnetNegotiate(cmd TelnetCommands, telopt byte) {
 		case byte(Q_NO):
 			tl.setRFC1143(telopt, byte(Q_WANTYES), q_HIM(q))
 			tl.sendNegotiate(TELNET_WILL, telopt)
-			break
 		case byte(Q_WANTNO):
 			tl.setRFC1143(telopt, byte(Q_WANTNO_OP), q_HIM(q))
-			break
 		case byte(Q_WANTYES_OP):
 			tl.setRFC1143(telopt, byte(Q_WANTYES), q_HIM(q))
-			break
 		}
-		break
+
 	// force turn-off of locally enabled option
 	case TELNET_WONT:
 		switch q_US(q) {
 		case byte(Q_YES):
 			tl.setRFC1143(telopt, byte(Q_WANTNO), q_HIM(q))
 			tl.sendNegotiate(TELNET_WONT, telopt)
-			break
 		case byte(Q_WANTYES):
 			tl.setRFC1143(telopt, byte(Q_WANTYES_OP), q_HIM(q))
-			break
 		case byte(Q_WANTNO_OP):
 			tl.setRFC1143(telopt, byte(Q_WANTNO), q_HIM(q))
-			break
 		}
-		break
 
 	// ask remote end to enable an option
 	case TELNET_DO:
@@ -92,15 +85,11 @@ func (tl *telnet) TelnetNegotiate(cmd TelnetCommands, telopt byte) {
 		case byte(Q_NO):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTYES))
 			tl.sendNegotiate(TELNET_DO, telopt)
-			break
 		case byte(Q_WANTNO):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTNO_OP))
-			break
 		case byte(Q_WANTYES_OP):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTYES))
-			break
 		}
-		break
 
 	// demand remote end disable an option
 	case TELNET_DONT:
@@ -108,15 +97,11 @@ func (tl *telnet) TelnetNegotiate(cmd TelnetCommands, telopt byte) {
 		case byte(Q_YES):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTNO))
 			tl.sendNegotiate(TELNET_DONT, telopt)
-			break
 		case byte(Q_WANTYES):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTYES_OP))
-			break
 		case byte(Q_WANTNO_OP):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTNO))
-			break
 		}
-		break
 	}
 }
 
@@ -264,8 +249,45 @@ func (tl *telnet) setRFC1143(telopt byte, us byte, him byte) {
 
 //------------------------------------------------------------------------------------------------//
 
+// Check if we support a particular telopt; if us is non-zero, we
+// check if we(local) supports it, otherwise we check if he(remote)
+// supports it.  return non-zero if supported, zero if not supported.
+func (tl *telnet) checkTelOpt(telopt byte, us bool) bool {
+	// if we have no telopts table, we obviously don't support it
+	if len(tl.telOpts) == 0 {
+		return false
+	}
+
+	// loop until found or end marker (us and him both 0)
+	for _, v := range tl.telOpts {
+		if byte(v.telopt) == telopt {
+			if us && v.us == TELNET_WILL {
+				return true
+			} else if us && v.him == TELNET_DO {
+				return true
+			} else {
+				return false
+			}
+		}
+	}
+
+	// not found, so not supported
+	return false
+}
+
+//------------------------------------------------------------------------------------------------//
+
 // Send negotiation bytes
 func (tl *telnet) sendNegotiate(cmd TelnetCommands, telopt byte) {
 	data := []byte{TELNET_IAC, byte(cmd), telopt}
 	tl.send(data)
+}
+
+//------------------------------------------------------------------------------------------------//
+
+// helper for the negotiation routines
+func (tl *telnet) negotiateEvent(EventType TelnetEventType, opt byte) {
+	ne := NewTelnetNegotiateEvent(EventType)
+	ne.TelOpt = TelnetOptions(opt)
+	tl.callEventHandler(ne)
 }
