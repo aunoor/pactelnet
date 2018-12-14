@@ -14,8 +14,8 @@ type (
 )
 
 // telnet NVT EOL sequences
-var CRLF = [...]byte{'\r', '\n'}
-var CRNUL = [...]byte{'\r', 0}
+var CRLF = []byte{'\r', '\n'}
+var CRNUL = []byte{'\r', 0}
 
 const (
 	TELNET_FLAG_TRANSMIT_BINARY telnetInternalFlags = 32
@@ -56,3 +56,16 @@ const (
 	Q_WANTNO_OP                    = 4
 	Q_WANTYES_OP                   = 5
 )
+
+/* helper for Q-method option tracking */
+func q_US(q TelnetRFC1143) byte {
+	return (byte)(q.state & 0x0F)
+}
+
+func q_HIM(q TelnetRFC1143) byte {
+	return (byte)((q.state & 0xF0) >> 4)
+}
+
+func q_MAKE(us byte, him byte) byte {
+	return (byte)((us) | ((him) << 4))
+}
