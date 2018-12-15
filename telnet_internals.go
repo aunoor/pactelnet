@@ -23,7 +23,7 @@ const (
 	TELNET_PFLAG_DEFLATE                            = 128
 )
 const (
-	TELNET_STATE_DATA telnetState = 0
+	TELNET_STATE_DATA telnetState = iota
 	TELNET_STATE_EOL
 	TELNET_STATE_IAC
 	TELNET_STATE_WILL
