@@ -412,7 +412,133 @@ func (tl *telnet) process(buffer []byte) {
 
 // Negotiation handling magic for RFC1143
 func (tl *telnet) negotiate(telopt byte) {
-	//TODO:
+
+	/* in PROXY mode, just pass it thru and do nothing */
+	if tl.flags.Contains(int(TELNET_FLAG_PROXY)) {
+		switch tl.state {
+		case TELNET_STATE_WILL:
+			tl.negotiateEvent(TELNET_EV_WILL, telopt)
+		case TELNET_STATE_WONT:
+			tl.negotiateEvent(TELNET_EV_WONT, telopt)
+		case TELNET_STATE_DO:
+			tl.negotiateEvent(TELNET_EV_DO, telopt)
+		case TELNET_STATE_DONT:
+			tl.negotiateEvent(TELNET_EV_DONT, telopt)
+		}
+		return
+	}
+
+	// lookup the current state of the option
+	var q TelnetRFC1143 = tl.getRFC1143(telopt)
+
+	// start processing...
+	switch tl.state {
+	// request to enable option on remote end or confirm DO
+	case TELNET_STATE_WILL:
+		switch q_HIM(q) {
+		case byte(Q_NO):
+			if tl.checkTelOpt(telopt, false) {
+				tl.setRFC1143(telopt, q_US(q), byte(Q_YES))
+				tl.sendNegotiate(TELNET_DO, telopt)
+				tl.negotiateEvent(TELNET_EV_WILL, telopt)
+			} else {
+				tl.sendNegotiate(TELNET_DONT, telopt)
+			}
+
+		case byte(Q_WANTNO):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_NO))
+			tl.negotiateEvent(TELNET_EV_WONT, telopt)
+			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "DONT answered by WILL");
+
+		case byte(Q_WANTNO_OP):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_YES))
+			tl.negotiateEvent(TELNET_EV_WILL, telopt)
+			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "DONT answered by WILL");
+
+		case byte(Q_WANTYES):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_YES))
+			tl.negotiateEvent(TELNET_EV_WILL, telopt)
+
+		case byte(Q_WANTYES_OP):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTNO))
+			tl.sendNegotiate(TELNET_DONT, telopt)
+			tl.negotiateEvent(TELNET_EV_WILL, telopt)
+		}
+
+	// request to disable option on remote end, confirm DONT, reject DO
+	case TELNET_STATE_WONT:
+		switch q_HIM(q) {
+		case byte(Q_YES):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_NO))
+			tl.sendNegotiate(TELNET_DONT, telopt)
+			tl.negotiateEvent(TELNET_EV_WONT, telopt)
+		case byte(Q_WANTNO):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_NO))
+			tl.negotiateEvent(TELNET_EV_WONT, telopt)
+		case byte(Q_WANTNO_OP):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_WANTYES))
+			tl.negotiateEvent(TELNET_EV_DO, telopt)
+		case byte(Q_WANTYES):
+			fallthrough
+		case byte(Q_WANTYES_OP):
+			tl.setRFC1143(telopt, q_US(q), byte(Q_NO))
+		}
+
+	// request to enable option on local end or confirm WILL
+	case TELNET_STATE_DO:
+		switch q_US(q) {
+		case byte(Q_NO):
+			if tl.checkTelOpt(telopt, true) {
+				tl.setRFC1143(telopt, byte(Q_YES), q_HIM(q))
+				tl.sendNegotiate(TELNET_WILL, telopt)
+				tl.negotiateEvent(TELNET_EV_DO, telopt)
+			} else {
+				tl.sendNegotiate(TELNET_WONT, telopt)
+			}
+
+		case byte(Q_WANTNO):
+			tl.setRFC1143(telopt, byte(Q_NO), q_HIM(q))
+			tl.negotiateEvent(TELNET_EV_DONT, telopt)
+			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "WONT answered by DO");
+
+		case byte(Q_WANTNO_OP):
+			tl.setRFC1143(telopt, byte(Q_YES), q_HIM(q))
+			tl.negotiateEvent(TELNET_EV_DO, telopt)
+			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "WONT answered by DO");
+
+		case byte(Q_WANTYES):
+			tl.setRFC1143(telopt, byte(Q_YES), q_HIM(q))
+			tl.negotiateEvent(TELNET_EV_DO, telopt)
+
+		case byte(Q_WANTYES_OP):
+			tl.setRFC1143(telopt, byte(Q_WANTNO), q_HIM(q))
+			tl.sendNegotiate(TELNET_WONT, telopt)
+			tl.negotiateEvent(TELNET_EV_DO, telopt)
+		}
+
+	// request to disable option on local end, confirm WONT, reject WILL
+	case TELNET_STATE_DONT:
+		switch q_US(q) {
+		case byte(Q_YES):
+			tl.setRFC1143(telopt, byte(Q_NO), q_HIM(q))
+			tl.sendNegotiate(TELNET_WONT, telopt)
+			tl.negotiateEvent(TELNET_EV_DONT, telopt)
+
+		case byte(Q_WANTNO):
+			tl.setRFC1143(telopt, byte(Q_NO), q_HIM(q))
+			tl.negotiateEvent(TELNET_EV_WONT, telopt)
+
+		case byte(Q_WANTNO_OP):
+			tl.setRFC1143(telopt, byte(Q_WANTYES), q_HIM(q))
+			tl.sendNegotiate(TELNET_WILL, telopt)
+			tl.negotiateEvent(TELNET_EV_WILL, telopt)
+
+		case byte(Q_WANTYES_OP):
+			fallthrough
+		case byte(Q_WANTYES):
+			tl.setRFC1143(telopt, byte(Q_NO), q_HIM(q))
+		}
+	} //switch
 }
 
 // Process a subnegotiation buffer; return non-zero if the current buffer
