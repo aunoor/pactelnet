@@ -3,7 +3,7 @@ package pactelnet
 import "bytes"
 import "github.com/yourbasic/bit"
 
-type telnet struct {
+type Telnet struct {
 	telOpts  []TelnetOptionReq
 	flags    *bit.Set
 	userData interface{}
@@ -16,8 +16,8 @@ type telnet struct {
 	OnTelnetEvent func(telnetEvent telnetEventInterface)
 }
 
-func NewTelnet(options []TelnetOptionReq, flags []TelnetFlags, userData interface{}) *telnet {
-	tl := new(telnet)
+func NewTelnet(options []TelnetOptionReq, flags []TelnetFlags, userData interface{}) *Telnet {
+	tl := new(Telnet)
 	tl.telOpts = options
 	tl.flags = new(bit.Set)
 	for _, v := range flags {
@@ -36,14 +36,14 @@ func NewTelnet(options []TelnetOptionReq, flags []TelnetFlags, userData interfac
 
 //------------------------------------------------------------------------------------------------//
 
-func (tl *telnet) TelnetRecv(buffer []byte) {
+func (tl *Telnet) TelnetRecv(buffer []byte) {
 	tl.process(buffer)
 }
 
 //------------------------------------------------------------------------------------------------//
 
 // Send negotiation
-func (tl *telnet) TelnetNegotiate(cmd TelnetCommands, telopt byte) {
+func (tl *Telnet) TelnetNegotiate(cmd TelnetCommands, telopt byte) {
 	// if we're in proxy mode, just send it now
 	if tl.flags.Contains(int(TELNET_FLAG_PROXY)) {
 		data := []byte{TELNET_IAC, byte(cmd), telopt}
@@ -108,7 +108,7 @@ func (tl *telnet) TelnetNegotiate(cmd TelnetCommands, telopt byte) {
 //------------------------------------------------------------------------------------------------//
 
 // Send an iac command
-func (tl *telnet) TelnetIAC(cmd byte) {
+func (tl *Telnet) TelnetIAC(cmd byte) {
 	data := []byte{TELNET_IAC, byte(cmd)}
 	tl.send(data)
 }
@@ -116,7 +116,7 @@ func (tl *telnet) TelnetIAC(cmd byte) {
 //------------------------------------------------------------------------------------------------//
 
 // Send non-command data (escapes IAC bytes)
-func (tl *telnet) TelnetSend(buffer []byte) {
+func (tl *Telnet) TelnetSend(buffer []byte) {
 	var ln, i int
 	for i, _ = range buffer {
 		// dump prior portion of text, send escaped bytes
@@ -140,7 +140,7 @@ func (tl *telnet) TelnetSend(buffer []byte) {
 
 //------------------------------------------------------------------------------------------------//
 
-func (tl *telnet) TelnetSendText(buffer []byte) {
+func (tl *Telnet) TelnetSendText(buffer []byte) {
 	var ln, i int
 
 	for i, _ = range buffer {
@@ -179,7 +179,7 @@ func (tl *telnet) TelnetSendText(buffer []byte) {
 
 //-------------------------------Private functions------------------------------------------------//
 
-func (tl *telnet) callEventHandler(telnetEvent telnetEventInterface) {
+func (tl *Telnet) callEventHandler(telnetEvent telnetEventInterface) {
 	if tl.OnTelnetEvent != nil {
 		telnetEvent.SetUserData(tl.userData)
 		tl.OnTelnetEvent(telnetEvent)
@@ -188,7 +188,7 @@ func (tl *telnet) callEventHandler(telnetEvent telnetEventInterface) {
 
 //------------------------------------------------------------------------------------------------//
 
-func (tl *telnet) send(buffer []byte) {
+func (tl *Telnet) send(buffer []byte) {
 	ev := NewTelnetSendEvent()
 	ev.Buffer = buffer
 	tl.callEventHandler(ev)
@@ -196,7 +196,7 @@ func (tl *telnet) send(buffer []byte) {
 
 //------------------------------------------------------------------------------------------------//
 
-func (tl *telnet) process(buffer []byte) {
+func (tl *Telnet) process(buffer []byte) {
 	var i, start int
 
 	for i, dataByte := range buffer {
@@ -367,7 +367,7 @@ func (tl *telnet) process(buffer []byte) {
 			 */
 			default:
 				/* TODO:
-				   _error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0,
+				   _error(Telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0,
 					   "unexpected byte after IAC inside SB: %d",
 					   dataByte);
 				*/
@@ -411,7 +411,7 @@ func (tl *telnet) process(buffer []byte) {
 //------------------------------------------------------------------------------------------------//
 
 // Negotiation handling magic for RFC1143
-func (tl *telnet) negotiate(telopt byte) {
+func (tl *Telnet) negotiate(telopt byte) {
 
 	/* in PROXY mode, just pass it thru and do nothing */
 	if tl.flags.Contains(int(TELNET_FLAG_PROXY)) {
@@ -448,12 +448,12 @@ func (tl *telnet) negotiate(telopt byte) {
 		case byte(Q_WANTNO):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_NO))
 			tl.negotiateEvent(TELNET_EV_WONT, telopt)
-			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "DONT answered by WILL");
+			//_error(Telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "DONT answered by WILL");
 
 		case byte(Q_WANTNO_OP):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_YES))
 			tl.negotiateEvent(TELNET_EV_WILL, telopt)
-			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "DONT answered by WILL");
+			//_error(Telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "DONT answered by WILL");
 
 		case byte(Q_WANTYES):
 			tl.setRFC1143(telopt, q_US(q), byte(Q_YES))
@@ -499,12 +499,12 @@ func (tl *telnet) negotiate(telopt byte) {
 		case byte(Q_WANTNO):
 			tl.setRFC1143(telopt, byte(Q_NO), q_HIM(q))
 			tl.negotiateEvent(TELNET_EV_DONT, telopt)
-			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "WONT answered by DO");
+			//_error(Telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "WONT answered by DO");
 
 		case byte(Q_WANTNO_OP):
 			tl.setRFC1143(telopt, byte(Q_YES), q_HIM(q))
 			tl.negotiateEvent(TELNET_EV_DO, telopt)
-			//_error(telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "WONT answered by DO");
+			//_error(Telnet, __LINE__, __func__, TELNET_EPROTOCOL, 0, "WONT answered by DO");
 
 		case byte(Q_WANTYES):
 			tl.setRFC1143(telopt, byte(Q_YES), q_HIM(q))
@@ -543,7 +543,7 @@ func (tl *telnet) negotiate(telopt byte) {
 
 // Process a subnegotiation buffer; return non-zero if the current buffer
 // must be aborted and reprocessed due to COMPRESS2 being activated
-func (tl *telnet) subnegotiate() bool {
+func (tl *Telnet) subnegotiate() bool {
 	subnEvent := NewTelnetSubnegotiateEvent()
 	subnEvent.TelOpt = TelnetOptions(tl.sb_telopt)
 	subnEvent.Buffer = tl.buffer.Bytes()
@@ -569,7 +569,7 @@ func (tl *telnet) subnegotiate() bool {
 //------------------------------------------------------------------------------------------------//
 
 // Retrieve RFC1143 option state
-func (tl *telnet) getRFC1143(telopt byte) TelnetRFC1143 {
+func (tl *Telnet) getRFC1143(telopt byte) TelnetRFC1143 {
 
 	// search for entry
 	for _, v := range tl.rfc1143List {
@@ -585,7 +585,7 @@ func (tl *telnet) getRFC1143(telopt byte) TelnetRFC1143 {
 //------------------------------------------------------------------------------------------------//
 
 // Save RFC1143 option state
-func (tl *telnet) setRFC1143(telopt byte, us byte, him byte) {
+func (tl *Telnet) setRFC1143(telopt byte, us byte, him byte) {
 	var qtmp TelnetRFC1143
 
 	// search for entry
@@ -618,7 +618,7 @@ func (tl *telnet) setRFC1143(telopt byte, us byte, him byte) {
 // Check if we support a particular telopt; if us is non-zero, we
 // check if we(local) supports it, otherwise we check if he(remote)
 // supports it.  return non-zero if supported, zero if not supported.
-func (tl *telnet) checkTelOpt(telopt byte, us bool) bool {
+func (tl *Telnet) checkTelOpt(telopt byte, us bool) bool {
 	// if we have no telopts table, we obviously don't support it
 	if len(tl.telOpts) == 0 {
 		return false
@@ -644,7 +644,7 @@ func (tl *telnet) checkTelOpt(telopt byte, us bool) bool {
 //------------------------------------------------------------------------------------------------//
 
 // Send negotiation bytes
-func (tl *telnet) sendNegotiate(cmd TelnetCommands, telopt byte) {
+func (tl *Telnet) sendNegotiate(cmd TelnetCommands, telopt byte) {
 	data := []byte{TELNET_IAC, byte(cmd), telopt}
 	tl.send(data)
 }
@@ -652,7 +652,7 @@ func (tl *telnet) sendNegotiate(cmd TelnetCommands, telopt byte) {
 //------------------------------------------------------------------------------------------------//
 
 // helper for the negotiation routines
-func (tl *telnet) negotiateEvent(EventType TelnetEventType, opt byte) {
+func (tl *Telnet) negotiateEvent(EventType TelnetEventType, opt byte) {
 	ne := NewTelnetNegotiateEvent(EventType)
 	ne.TelOpt = TelnetOptions(opt)
 	tl.callEventHandler(ne)

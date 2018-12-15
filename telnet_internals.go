@@ -13,7 +13,7 @@ type (
 	}
 )
 
-// telnet NVT EOL sequences
+// Telnet NVT EOL sequences
 var CRLF = []byte{'\r', '\n'}
 var CRNUL = []byte{'\r', 0}
 
