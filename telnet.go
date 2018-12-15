@@ -418,7 +418,25 @@ func (tl *telnet) negotiate(telopt byte) {
 // Process a subnegotiation buffer; return non-zero if the current buffer
 // must be aborted and reprocessed due to COMPRESS2 being activated
 func (tl *telnet) subnegotiate() bool {
-	//TODO:
+	subnEvent := NewTelnetSubnegotiateEvent()
+	subnEvent.TelOpt = TelnetOptions(tl.sb_telopt)
+	subnEvent.Buffer = tl.buffer.Bytes()
+	tl.callEventHandler(subnEvent)
+
+	switch tl.sb_telopt {
+	// specially handled subnegotiation telopt types
+	case byte(TELOPT_ZMP):
+		//TODO: return ZMPTelnet();
+	case byte(TELOPT_TTYPE):
+		//TODO: return TTypeTelnet();
+		/*
+			case (byte)TelnetOptions.TELOPT_OLD_ENVIRON:
+			case (byte)TelnetOptions.TELOPT_NEW_ENVIRON:
+				return _environ_telnet(_sb_telopt, _buffer, _buffer_pos);
+		*/
+	case byte(TELOPT_MSSP):
+		//TODO: return MSSPTelnet();
+	}
 	return false
 }
 
