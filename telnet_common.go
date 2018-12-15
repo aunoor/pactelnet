@@ -9,11 +9,11 @@ type (
 
 	TelnetOptionReq struct {
 		// one of the TELOPT codes
-		telopt TelnetOptions
+		TelOpt TelnetOptions
 		// TELNET_WILL or TELNET_WONT
-		us TelnetCommands
+		Us TelnetCommands
 		// TELNET_DO or TELNET_DONT
-		him TelnetCommands
+		Him TelnetCommands
 	}
 
 	MSSPPair struct {
