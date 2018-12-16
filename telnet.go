@@ -13,7 +13,7 @@ type Telnet struct {
 	sb_telopt     byte
 	buffer        *bytes.Buffer
 	rfc1143List   []TelnetRFC1143
-	OnTelnetEvent func(telnetEvent telnetEventInterface)
+	OnTelnetEvent func(telnetEvent TelnetEventInterface)
 }
 
 func NewTelnet(options []TelnetOptionReq, flags []TelnetFlags, userData interface{}) *Telnet {
@@ -179,7 +179,7 @@ func (tl *Telnet) TelnetSendText(buffer []byte) {
 
 //-------------------------------Private functions------------------------------------------------//
 
-func (tl *Telnet) callEventHandler(telnetEvent telnetEventInterface) {
+func (tl *Telnet) callEventHandler(telnetEvent TelnetEventInterface) {
 	if tl.OnTelnetEvent != nil {
 		telnetEvent.SetUserData(tl.userData)
 		tl.OnTelnetEvent(telnetEvent)
@@ -626,10 +626,10 @@ func (tl *Telnet) checkTelOpt(telopt byte, us bool) bool {
 
 	// loop until found or end marker (us and him both 0)
 	for _, v := range tl.telOpts {
-		if byte(v.telopt) == telopt {
-			if us && v.us == TELNET_WILL {
+		if byte(v.TelOpt) == telopt {
+			if us && v.Us == TELNET_WILL {
 				return true
-			} else if us && v.him == TELNET_DO {
+			} else if us && v.Him == TELNET_DO {
 				return true
 			} else {
 				return false

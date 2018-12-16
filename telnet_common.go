@@ -23,123 +23,67 @@ type (
 )
 
 const (
-	/// <summary>
-	/// End of subnegotiation parameters.
-	/// </summary>
+	// End of subnegotiation parameters.
 	TELNET_SE TelnetCommands = 240
-	/// <summary>
-	/// No operation.
-	/// </summary>
+	// No operation.
 	TELNET_NOP = 241
-	/// <summary>
-	/// The data stream portion of a Synch.
-	/// </summary>
+	// The data stream portion of a Synch.
 	TELNET_DM = 242
-	/// <summary>
-	/// NVT character BRK.
-	/// </summary>
+	// NVT character BRK.
 	TELNET_BRK = 243
-	/// <summary>
-	/// The function IP(Interrupt Process).
-	/// </summary>
+	// The function IP(Interrupt Process).
 	TELNET_IP = 244
-	/// <summary>
-	/// The function AO(Abort output).
-	/// </summary>
+	// The function AO(Abort output).
 	TELNET_AO = 245
-	/// <summary>
-	/// The function AYT(Are You There).
-	/// </summary>
+	// The function AYT(Are You There).
 	TELNET_AYT = 246
-	/// <summary>
-	/// The function EC(Erase character).
-	/// </summary>
+	// The function EC(Erase character).
 	TELNET_EC = 247
-	/// <summary>
-	/// The function EL(Erase Line).
-	/// </summary>
+	// The function EL(Erase Line).
 	TELNET_EL = 248
-	/// <summary>
-	/// The GA signal(Go ahead).
-	/// </summary>
+	// The GA signal(Go ahead).
 	TELNET_GA = 249
-	/// <summary>
-	/// Indicates that what follows is subnegotiation of the indicated option.
-	/// </summary>
+	// Indicates that what follows is subnegotiation of the indicated option.
 	TELNET_SB = 250
-	/// <summary>
-	/// Indicates the desire to begin performing, or confirmation that
-	/// you are now performing, the indicated option.
-	/// </summary>
+	// Indicates the desire to begin performing, or confirmation that
+	// you are now performing, the indicated option.
 	TELNET_WILL = 251
-	/// <summary>
-	/// Indicates the refusal to perform, or continue performing, the indicated option.
-	/// </summary>
+	// Indicates the refusal to perform, or continue performing, the indicated option.
 	TELNET_WONT = 252
-	/// <summary>
 	/// Indicates the request that the other party perform, or confirmation that you are expecting
 	/// the other party to perform, the indicated option.
-	/// </summary>
 	TELNET_DO = 253
-	/// <summary>
-	/// Indicates the demand that the other party stop performing,
-	/// or confirmation that you are no longer expecting the other party to perform, the indicated option.
-	/// </summary>
+	// Indicates the demand that the other party stop performing,
+	// or confirmation that you are no longer expecting the other party to perform, the indicated option.
 	TELNET_DONT = 254
-	/// <summary>
-	/// Data Byte 255.
-	/// </summary>
+	// Data Byte 255.
 	TELNET_IAC = 255
 )
 
 const (
-	/// <summary>
-	/// 8-bit data path
-	/// </summary>
+	// 8-bit data path
 	TELOPT_BINARY TelnetOptions = 0
-	/// <summary>
-	/// Echo
-	/// </summary>
+	// Echo
 	TELOPT_ECHO = 1
-	/// <summary>
-	/// Prepare to reconnect
-	/// </summary>
+	// Prepare to reconnect
 	TELOPT_RCP = 2
-	/// <summary>
-	/// Suppress go ahead
-	/// </summary>
+	// Suppress go ahead
 	TELOPT_SGA = 3
-	/// <summary>
-	/// Approximate message size
-	/// </summary>
+	// Approximate message size
 	TELOPT_NAMS = 4
-	/// <summary>
-	/// Give status
-	/// </summary>
+	// Give status
 	TELOPT_STATUS = 5
-	/// <summary>
-	/// Timing mark
-	/// </summary>
+	// Timing mark
 	TELOPT_TM = 6
-	/// <summary>
-	/// Remote controlled transmission and echo
-	/// </summary>
+	// Remote controlled transmission and echo
 	TELOPT_RCTE = 7
-	/// <summary>
-	/// Negotiate about output line width
-	/// </summary>
+	// Negotiate about output line width
 	TELOPT_NAOL = 8
-	/// <summary>
-	/// Negotiate about output page size
-	/// </summary>
+	// Negotiate about output page size
 	TELOPT_NAOP = 9
-	/// <summary>
-	/// Negotiate about CR disposition
-	/// </summary>
+	// Negotiate about CR disposition
 	TELOPT_NAOCRD = 10
-	/// <summary>
-	/// Negotiate about horizontal tabstops
-	/// </summary>
+	// Negotiate about horizontal tabstops
 	TELOPT_NAOHTS       = 11
 	TELOPT_NAOHTD       = 12 /* negotiate about horizontal tab disposition */
 	TELOPT_NAOFFD       = 13 /* negotiate about formfeed disposition */
@@ -163,9 +107,7 @@ const (
 	TELOPT_NAWS         = 31 /* window size */
 	TELOPT_TSPEED       = 32 /* terminal speed */
 	TELOPT_LFLOW        = 33 /* remote flow control */
-	/// <summary>
-	/// Linemode option
-	/// </summary>
+	// Linemode option
 	TELOPT_LINEMODE        = 34
 	TELOPT_XDISPLOC        = 35 /* X Display Location */
 	TELOPT_OLD_ENVIRON     = 36 /* Old - Environment variables */
@@ -182,16 +124,12 @@ const (
 	TELOPT_KERMIT          = 47 /* Automatic Kermit file transfer */
 	TELOPT_SEND_URL        = 48
 	TELOPT_FORWARD_X       = 49
-	/// <summary>
-	/// Mud serverstate protocol
-	/// </summary>
+	// Mud serverstate protocol
 	TELOPT_MSSP      = 70
 	TELOPT_COMPRESS  = 85
 	TELOPT_COMPRESS2 = 86
 	TELOPT_MCCP2     = 86
-	/// <summary>
-	/// ZMud protocol
-	/// </summary>
+	// ZMud protocol
 	TELOPT_ZMP              = 93
 	TELOPT_PRAGMA_LOGON     = 138
 	TELOPT_SSPI_LOGON       = 139
