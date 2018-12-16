@@ -1,14 +1,14 @@
 package pactelnet
 
 type (
-	telnetEventInterface interface {
+	TelnetEventInterface interface {
 		EventType() TelnetEventType
 		SetUserData(value interface{})
 		UserData() interface{}
 	}
 
 	telnetEvent struct {
-		telnetEventInterface
+		TelnetEventInterface
 		eventType TelnetEventType
 		userData  interface{}
 	}
