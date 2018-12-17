@@ -198,8 +198,9 @@ func (tl *Telnet) send(buffer []byte) {
 
 func (tl *Telnet) process(buffer []byte) {
 	var i, start int
+	var dataByte byte
 
-	for i, dataByte := range buffer {
+	for i, dataByte = range buffer {
 		switch tl.state {
 		// regular data
 		case TELNET_STATE_DATA:
@@ -207,15 +208,14 @@ func (tl *Telnet) process(buffer []byte) {
 			if dataByte == byte(TELNET_IAC) {
 				if i != start {
 					dataEvent := NewTelnetDataEvent()
-					dataEvent.Buffer = make([]byte, 0, i-start)
-					copy(dataEvent.Buffer, buffer[i-start:])
+					dataEvent.Buffer = buffer[start:]
 					tl.callEventHandler(dataEvent)
 				}
 				tl.state = TELNET_STATE_IAC
 			} else if dataByte == '\r' && (tl.flags.Contains(TELNET_FLAG_NVT_EOL)) && !(tl.internalFlags.Contains(TELNET_FLAG_RECEIVE_BINARY)) {
 				if i != start {
 					dataEvent := NewTelnetDataEvent()
-					copy(dataEvent.Buffer, buffer[i-start:])
+					dataEvent.Buffer = buffer[start:]
 					tl.callEventHandler(dataEvent)
 				}
 				tl.state = TELNET_STATE_EOL
@@ -238,7 +238,6 @@ func (tl *Telnet) process(buffer []byte) {
 			}
 			// state update
 			tl.state = TELNET_STATE_DATA
-			break
 
 			// IAC command
 		case TELNET_STATE_IAC:
@@ -275,7 +274,6 @@ func (tl *Telnet) process(buffer []byte) {
 				// state update
 				start = i + 1
 				tl.state = TELNET_STATE_DATA
-				break
 			}
 
 			// negotiation commands
@@ -289,7 +287,6 @@ func (tl *Telnet) process(buffer []byte) {
 			tl.negotiate(dataByte)
 			start = i + 1
 			tl.state = TELNET_STATE_DATA
-			break
 
 			// subnegotiation -- determine subnegotiation telopt
 		case TELNET_STATE_SB:
@@ -316,7 +313,6 @@ func (tl *Telnet) process(buffer []byte) {
 				start = i + 1
 				tl.state = TELNET_STATE_DATA
 			}
-			break
 
 			// IAC escaping inside a subnegotiation
 		case TELNET_STATE_SB_DATA_IAC:
@@ -398,11 +394,9 @@ func (tl *Telnet) process(buffer []byte) {
 	} //for
 
 	// pass through any remaining bytes
-	if tl.state == TELNET_STATE_DATA && i != start {
+	if tl.state == TELNET_STATE_DATA && start < len(buffer) {
 		dataEvent := NewTelnetDataEvent()
-		dataEvent.Buffer = make([]byte, 0, i-start)
-		//Array.Copy(buffer, start, dataEvent.buffer, 0, (i - start));
-		copy(dataEvent.Buffer, buffer[i-start:])
+		dataEvent.Buffer = buffer[start:]
 		tl.callEventHandler(dataEvent)
 	}
 
