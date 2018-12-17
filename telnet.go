@@ -207,6 +207,7 @@ func (tl *Telnet) process(buffer []byte) {
 			// on an IAC byte, pass through all pending bytes and switch states
 			if dataByte == byte(TELNET_IAC) {
 				if i != start {
+					//TODO: CHECK WHAT CAN HAPPEND!!!!
 					dataEvent := NewTelnetDataEvent()
 					dataEvent.Buffer = buffer[start:]
 					tl.callEventHandler(dataEvent)
