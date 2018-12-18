@@ -207,16 +207,15 @@ func (tl *Telnet) process(buffer []byte) {
 			// on an IAC byte, pass through all pending bytes and switch states
 			if dataByte == byte(TELNET_IAC) {
 				if i != start {
-					//TODO: CHECK WHAT CAN HAPPEND!!!!
 					dataEvent := NewTelnetDataEvent()
-					dataEvent.Buffer = buffer[start:]
+					dataEvent.Buffer = buffer[start:i]
 					tl.callEventHandler(dataEvent)
 				}
 				tl.state = TELNET_STATE_IAC
 			} else if dataByte == '\r' && (tl.flags.Contains(TELNET_FLAG_NVT_EOL)) && !(tl.internalFlags.Contains(TELNET_FLAG_RECEIVE_BINARY)) {
 				if i != start {
 					dataEvent := NewTelnetDataEvent()
-					dataEvent.Buffer = buffer[start:]
+					dataEvent.Buffer = buffer[start:i]
 					tl.callEventHandler(dataEvent)
 				}
 				tl.state = TELNET_STATE_EOL
